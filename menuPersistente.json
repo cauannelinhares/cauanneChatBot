@@ -1,0 +1,36 @@
+curl -X POST -H "Content-Type: application/json" -d '{
+  "persistent_menu":[
+    {
+      "locale":"default",
+      "composer_input_disabled":true,
+      "call_to_actions":[
+        {
+          "title":"Favoritos",
+          "type":"nested",
+          "call_to_actions":[
+            {
+              "title":"Netflix",
+              "type":"postback",
+              "payload":"acionou_netflix"
+            },
+            {
+              "title":"Games",
+              "type":"postback",
+              "payload":"acionou_games"
+            },
+            {
+              "title":"Spotify",
+              "type":"postback",
+              "payload":"acionou_musica"
+            }
+          ]
+        },
+        {
+          "type":"postback",
+          "title":"Informações de Contato",
+          "payload":"acionou_contato" 
+        }
+      ]
+    }
+  ]
+}' "https://graph.facebook.com/v2.6/me/messenger_profile?access_token=YOUR_ACESS_TOKEN"
