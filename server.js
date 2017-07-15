@@ -1,7 +1,10 @@
 //
 // # SimpleServer
 //
-// A simple chat server using Socket.IO, Express, and Async.
+// A simple chatbot server for Facebook Messenger 
+//
+// @author: Cauanne Linhares Pinheiro
+//
 //
 var http = require('http');
 var path = require('path');
@@ -28,6 +31,7 @@ router.use(bodyParser.urlencoded({extended: false}));
 var messages = [];
 var sockets = [];
 
+//Pode ser importante a medida que o bot cresce ser capaz de manter em qual estado ele se encontra
 var _estados = [];
 
 // GET
@@ -62,20 +66,22 @@ router.post('/webhook', function(req, res){
       var timeOfEvent = entry.time;
       //percorrer as mensagens
       entry.messaging.forEach(function(event){
-        
+        //Se o recebido for uma mensagem
         if(event.message){
           trataMensagem(event);
+          //Se o recebido for um postback
         } else if (event.postback && event.postback.payload) {
           
           console.log("achamos um payload ", event.postback.payload);
           
-          switch(event.postback.payload){
+          switch(event.postback.payload){//Atribuicao de acoes aos payloads
           
+            //Get_Started
             case 'acionou_comecar':
               sendFirstMenu(event.sender.id);
               sendTextMessage(event.sender.id, "Olá, Tudo bem? Sou um bot simpático e vou lhe apresentar as coisas que eu mais gosto.");
               break;
-              
+                
             case 'acionou_categorias':
               sendTextMessage(event.sender.id, "Estas são as categorias das minhas coisas favoritas, Vamos navegar?");
               showListCategorias(event.sender.id);
@@ -116,12 +122,13 @@ router.post('/webhook', function(req, res){
       })
       
     })
-    
+    //retorna ao facebook o status
     res.sendStatus(200);
   }
   
 });
 
+//funcao para tratar mensagens recebidas
 function trataMensagem(event){
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -184,11 +191,12 @@ function trataMensagem(event){
   }
 }
 
-
+//Funcao responsavel pela chamada da API de envio
+//Eh chamada sempre que tivermos que consumir a API pra enviar uma mensagem
 function callSendAPI(messageData){
   request({
     uri: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: { access_token: 'EAAJJIxYJ8UUBAJ42HOEWNXoXhzOwKz7cb067CQjjuybikj023D5SMEF06cZCjHVKVQwcKBWwjwEXBE65oW4Vq0Hh3O2VhQTAsk8WVPZCwm5TbkVH3F8UHU4syBubiMOoQ3dR22ZATqZB1q9Vstk7bBBfW1zvDSCLqBH8j2WoGAZDZD'},
+    qs: { access_token: YOUR_ACCESS_TOKEN},
     method: 'POST',
     json: messageData
   }, function(error, response, body) {
@@ -201,7 +209,7 @@ function callSendAPI(messageData){
   })
 }
 
-
+//Envia mensagem de texto puro e emojis
 function sendTextMessage(recipientID, messageText) {
   var messageData = {
     recipient: {
@@ -215,7 +223,7 @@ function sendTextMessage(recipientID, messageText) {
   callSendAPI(messageData);
 }
 
-
+//cria o primeiro menu de contato com o bot
 function sendFirstMenu(recipientId){
     var messageData = {
     recipient: {
@@ -252,6 +260,7 @@ function sendFirstMenu(recipientId){
   callSendAPI(messageData);
 }
 
+//Envia uma lista com as categorias disponiveis
 function showListCategorias(recipientId) {
   var messageData = {
     recipient: {
@@ -305,6 +314,7 @@ function showListCategorias(recipientId) {
    _estados[recipientId] = 'categorias_menu';
 }
 
+//Carousel
 function showNetflixCarousel (recipientId) {
     var messageData = {
     recipient: {
@@ -379,6 +389,7 @@ function showNetflixCarousel (recipientId) {
   _estados[recipientId] = 'netflix_carousel';
 }
 
+//Card com informacoes de contato da desenvolvedora
 function showInformacoesContato(recipientId){
   var messageData = {
     recipient: {
@@ -417,7 +428,7 @@ function showInformacoesContato(recipientId){
   callSendAPI(messageData);
 }
 
-
+//Envia gif com delay de 10 segundos
 function sendGif(recipientId){
   setTimeout(function() {
     var messageData = {
@@ -486,7 +497,7 @@ function showOptionsMenu(recipientId){
 
 
 
-
+//USELESS CODE
 io.on('connection', function (socket) {
     messages.forEach(function (data) {
       socket.emit('message', data);
